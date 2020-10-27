@@ -1,5 +1,9 @@
 """Representation for a documentation project on lsst.io"""
 
+from __future__ import annotations
+
+__all__ = ["Series", "Kind", "Project"]
+
 import datetime
 from enum import Enum
 from typing import Optional
