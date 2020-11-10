@@ -4,9 +4,12 @@ from __future__ import annotations
 
 __all__ = ["LtdProduct", "get_ltd_products"]
 
-from typing import List
+import datetime
+from typing import List, Optional
 
 import httpx
+from dateutil import parser as datetime_parser
+from dateutil.tz import tzutc
 from pydantic import HttpUrl, validator
 from pydantic.dataclasses import dataclass
 
@@ -23,6 +26,8 @@ class LtdProduct:
     title: str
 
     editions: int
+
+    updated: Optional[datetime.datetime]
 
     @validator("url")
     def validate_url(cls, v: HttpUrl) -> HttpUrl:
@@ -62,6 +67,21 @@ class LtdProduct:
 
         return v
 
+    @staticmethod
+    def parse_utc_datetime(
+        datetime_str: Optional[str],
+    ) -> Optional[datetime.datetime]:
+        """Parse a date string, returning a UTC datetime object."""
+        if datetime_str is not None:
+            date = (
+                datetime_parser.parse(datetime_str)
+                .astimezone(tzutc())
+                .replace(tzinfo=None)
+            )
+            return date
+        else:
+            return None
+
     @classmethod
     async def ingest_product(
         cls, client: httpx.AsyncClient, url: str
@@ -70,13 +90,23 @@ class LtdProduct:
         product_data = r.json()
 
         r_editions = await client.get(f"{url}/editions/")
-        edition_count = len(r_editions.json()["editions"])
+        editions = r_editions.json()["editions"]
+        edition_count = len(editions)
+
+        datetime_rebuilt = None
+        for edition_url in editions:
+            r = await client.get(edition_url)
+            if r.json()["slug"] == "main":
+                date_rebuilt = r.json()["date_rebuilt"]
+                datetime_rebuilt = cls.parse_utc_datetime(date_rebuilt)
+                break
 
         ltd_product = cls(
             url=product_data["published_url"],
             repo_url=product_data["doc_repo"],
             title=product_data["title"],
             editions=edition_count,
+            updated=datetime_rebuilt,
         )
 
         return ltd_product

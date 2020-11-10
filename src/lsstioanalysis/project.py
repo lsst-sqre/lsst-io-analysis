@@ -59,7 +59,7 @@ class Project:
     """The document series."""
 
     updated: datetime.datetime
-    """Date when teh main edition was last updated."""
+    """Date when the main edition was last updated."""
 
     kind: Enum[Kind] = Kind.guide
     """The documentat's type: either a document or a guide."""
