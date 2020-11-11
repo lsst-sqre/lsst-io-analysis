@@ -59,7 +59,7 @@ class LtdProduct:
 
     @validator("repo_url")
     def validate_repo_url(cls, v: HttpUrl) -> HttpUrl:
-        if v.path.endswith(".git"):
+        if v.path and v.path.endswith(".git"):
             v.path = v.path[:-4]
             return HttpUrl.build(
                 scheme=v.scheme,

@@ -52,17 +52,17 @@ class Project:
     GitHub repository).
     """
 
-    in_docushare: bool = False
-    """Is this project also backed by DocuShare?"""
-
     series: Optional[Series]
     """The document series."""
 
     updated: datetime.datetime
     """Date when the main edition was last updated."""
 
-    kind: Enum[Kind] = Kind.guide
-    """The documentat's type: either a document or a guide."""
-
     editions: int
     """The number of editions that this documentation project has."""
+
+    in_docushare: bool = False
+    """Is this project also backed by DocuShare?"""
+
+    kind: Kind = Kind.guide
+    """The documentat's type: either a document or a guide."""
