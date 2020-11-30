@@ -1,0 +1,28 @@
+name: Python CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python:
+          - 3.8
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # full depth for setuptools_scm
+
+      - name: Set up Python
+        uses: actions/setup-python@v2.1.2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install tox
+        run: pip install tox
+
+      - name: Run tox
+        run: tox -e lint,typing
